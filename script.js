@@ -1,5 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    /* ── Typed.js Animation ── */
+    const typedTextElement = document.querySelector('#typed-text');
+    if (typedTextElement) {
+        new Typed('#typed-text', {
+            strings: ['Developer', 'Admin Server', 'Freelancer'],
+            typeSpeed: 60,
+            backSpeed: 40,
+            backDelay: 1500,
+            loop: true,
+            showCursor: true,
+            cursorChar: '|'
+        });
+    }
+
     /* ── Nav scroll effect ── */
     const nav = document.querySelector('nav');
     window.addEventListener('scroll', () => {
