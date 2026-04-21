@@ -134,4 +134,56 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    /* ── Visitor Counter Fetch (Unique & Real-time) ── */
+    const fetchVisitorCount = async () => {
+        const visitorCountEl = document.getElementById('visitor-count');
+        if (!visitorCountEl) return;
+
+        try {
+            // ตรวจสอบว่าผู้ใช้นี้เคยเข้าชมแล้วหรือยัง (ใช้ LocalStorage)
+            const hasVisited = localStorage.getItem('palmme_has_visited');
+            
+            // API ฟรีสำหรับนับจำนวน (Abacus API)
+            const namespace = 'palmmeresume';
+            const key = 'visits';
+            
+            let url = `https://abacus.jasoncameron.dev/get/${namespace}/${key}`;
+            
+            if (!hasVisited) {
+                // ถ้าเพิ่งเคยเข้ามาครั้งแรก ให้ยิงไปที่ /hit เพื่อเพิ่มจำนวน
+                url = `https://abacus.jasoncameron.dev/hit/${namespace}/${key}`;
+                localStorage.setItem('palmme_has_visited', 'true');
+            }
+
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Network response was not ok');
+            const data = await response.json();
+            
+            // แอนิเมชันสำหรับตัวเลข
+            // Abacus API ส่งค่ากลับมาในรูปแบบ { "value": 123 }
+            const finalCount = data.value;
+            let start = null;
+            const duration = 1500;
+            const step = (timestamp) => {
+                if (!start) start = timestamp;
+                const progress = Math.min((timestamp - start) / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+                visitorCountEl.innerHTML = Math.floor(eased * finalCount) + '+';
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    visitorCountEl.innerHTML = finalCount + '+';
+                }
+            };
+            requestAnimationFrame(step);
+
+        } catch (error) {
+            console.error('Error fetching visitor count:', error);
+            // กรณี API ล่มให้แสดงเลข 0
+            visitorCountEl.innerHTML = '0+';
+        }
+    };
+
+    fetchVisitorCount();
+
 });
